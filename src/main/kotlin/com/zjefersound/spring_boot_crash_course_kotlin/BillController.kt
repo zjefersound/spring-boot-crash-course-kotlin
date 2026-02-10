@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
@@ -19,12 +19,17 @@ class BillController {
     val bills = mutableListOf<BillDTO>()
 
     @GetMapping
-    fun fetchBills(): List<BillDTO> = bills
+    fun fetchBills(
+        @RequestParam(value = "search", required = false ) search: String?,
+    ): List<BillDTO> {
+        if (search.isNullOrBlank()) return bills
+        return bills.filter { it -> it.description.contains(search) }
+    }
 
     @GetMapping("{id}")
     fun fetchBill(@PathVariable id: Long): BillDTO {
         val indexToUpdate = bills.indexOfFirst { it.id == id }
-        if (indexToUpdate == -1) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        if (indexToUpdate == -1) throw BillNotFoundException(id)
         return bills[indexToUpdate]
     }
 
@@ -39,7 +44,7 @@ class BillController {
     @PutMapping("{id}")
     fun updateBill(@PathVariable id: Long, @RequestBody bill: BillDTO): BillDTO {
         val indexToUpdate = bills.indexOfFirst { it.id == id }
-        if (indexToUpdate == -1) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        if (indexToUpdate == -1) throw BillNotFoundException(id)
         bills[indexToUpdate] = bill
         return bill
     }
@@ -47,7 +52,7 @@ class BillController {
     @DeleteMapping("{id}")
     fun deleteBill(@PathVariable id: Long): Unit {
         val indexToDelete = bills.indexOfFirst { it.id == id }
-        if (indexToDelete == -1) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        if (indexToDelete == -1) throw BillNotFoundException(id)
         bills.removeAt(indexToDelete)
     }
 }

@@ -1,6 +1,6 @@
 package com.zjefersound.spring_boot_crash_course_kotlin
 
-import org.springframework.http.HttpStatus
+import com.zjefersound.spring_boot_crash_course_kotlin.service.BillService
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/bills")
-class BillController {
+class BillController(
+    private val billService: BillService
+) {
 
     val bills = mutableListOf<BillDTO>()
 
@@ -22,37 +23,32 @@ class BillController {
     fun fetchBills(
         @RequestParam(value = "search", required = false ) search: String?,
     ): List<BillDTO> {
-        if (search.isNullOrBlank()) return bills
-        return bills.filter { it -> it.description.contains(search) }
+        return billService.getBills()
+
+//        if (search.isNullOrBlank()) return bills
+//        return bills.filter { it -> it.description.contains(search) }
     }
 
     @GetMapping("{id}")
     fun fetchBill(@PathVariable id: Long): BillDTO {
-        val indexToUpdate = bills.indexOfFirst { it.id == id }
-        if (indexToUpdate == -1) throw BillNotFoundException(id)
-        return bills[indexToUpdate]
+
+        return billService.getBillById(id)
     }
 
     @PostMapping
     fun postBill(
         @RequestBody bill: BillDTO
     ): BillDTO {
-        bills.add(bill)
-        return bill
+        return billService.insertBill(bill)
     }
 
     @PutMapping("{id}")
     fun updateBill(@PathVariable id: Long, @RequestBody bill: BillDTO): BillDTO {
-        val indexToUpdate = bills.indexOfFirst { it.id == id }
-        if (indexToUpdate == -1) throw BillNotFoundException(id)
-        bills[indexToUpdate] = bill
-        return bill
+        return billService.updateBill(bill)
     }
 
     @DeleteMapping("{id}")
     fun deleteBill(@PathVariable id: Long): Unit {
-        val indexToDelete = bills.indexOfFirst { it.id == id }
-        if (indexToDelete == -1) throw BillNotFoundException(id)
-        bills.removeAt(indexToDelete)
+        return billService.deleteBill(id)
     }
 }

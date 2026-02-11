@@ -2,3 +2,7 @@ spring:
   application:
     name: spring-boot-crash-course-kotlin
 
+global:
+  language: "EN"
+  currency: "USD"
+

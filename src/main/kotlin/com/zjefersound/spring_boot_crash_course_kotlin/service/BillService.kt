@@ -3,12 +3,24 @@ package com.zjefersound.spring_boot_crash_course_kotlin.service
 import com.zjefersound.spring_boot_crash_course_kotlin.BillDTO
 import com.zjefersound.spring_boot_crash_course_kotlin.BillNotFoundException
 import com.zjefersound.spring_boot_crash_course_kotlin.repository.BillRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class BillService(
-    private val billRepository: BillRepository
+    private val billRepository: BillRepository,
+
+    @param:Value($$"${spring.application.version}")
+    private val version: String,
+    // Custom env variable
+    @param:Value($$"${DATABASE_URL}")
+    private val fake_database_url: String
 ) {
+
+    init {
+        println("BillService running in version $version")
+        println("DB_URL: $fake_database_url")
+    }
     fun getBills(): List<BillDTO> {
         return billRepository.getAllBills()
     }
